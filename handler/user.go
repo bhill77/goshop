@@ -28,7 +28,12 @@ func (h UserHandler) Index(c echo.Context) error {
 
 func (h UserHandler) Create(c echo.Context) error {
 	var user entity.User
-	c.Bind(&user)
+
+	e := validateRequest(c, &user)
+	if len(e) > 0 {
+		err := map[string]interface{}{"validationError": e}
+		return c.JSON(http.StatusBadRequest, err)
+	}
 
 	user.Password, _ = HashPassword(user.Password)
 	err := h.db.Create(&user).Error
@@ -49,7 +54,12 @@ func (h UserHandler) Update(c echo.Context) error {
 	}
 
 	var payload entity.User
-	c.Bind(&payload)
+
+	e := validateRequest(c, &payload)
+	if len(e) > 0 {
+		err := map[string]interface{}{"validationError": e}
+		return c.JSON(http.StatusBadRequest, err)
+	}
 
 	user.Name = payload.Name
 	user.Address = payload.Address

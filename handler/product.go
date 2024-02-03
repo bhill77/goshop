@@ -20,9 +20,15 @@ func NewProductHandler(db *gorm.DB) ProductHandler {
 
 func (h ProductHandler) Create(c echo.Context) error {
 	var product entity.Product
-	c.Bind(&product)
+
+	e := validateRequest(c, &product)
+	if len(e) > 0 {
+		err := map[string]interface{}{"validationError": e}
+		return c.JSON(http.StatusBadRequest, err)
+	}
 
 	h.db.Create(&product)
+	h.db.Preload("Category").First(&product)
 
 	return c.JSON(http.StatusCreated, product)
 }

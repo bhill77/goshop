@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"github.com/thedevsaddam/govalidator"
+)
 
 type Product struct {
 	ID          int       `json:"id"`
@@ -11,4 +15,13 @@ type Product struct {
 	CategoryID  int       `json:"category_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	Category    Category  `json:"category"`
+}
+
+func (Product) Rules() govalidator.MapData {
+	return govalidator.MapData{
+		"name":        []string{"required"},
+		"price":       []string{"required"},
+		"stock":       []string{"required"},
+		"category_id": []string{"required"},
+	}
 }
