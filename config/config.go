@@ -7,8 +7,9 @@ import (
 )
 
 type Config struct {
-	Port int
-	DB   DB
+	Port      int
+	JwtSecret string
+	DB        DB
 }
 
 type DB struct {
@@ -29,7 +30,8 @@ func GetConfig() Config {
 	}
 
 	return Config{
-		Port: viper.GetInt("port"),
+		Port:      viper.GetInt("port"),
+		JwtSecret: viper.GetString("jwt_secret"),
 		DB: DB{
 			Host:         viper.GetString("db.host"),
 			Port:         viper.GetInt("db.port"),
