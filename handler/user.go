@@ -6,6 +6,7 @@ import (
 
 	"github.com/bhill77/goshop/config"
 	"github.com/bhill77/goshop/entity"
+	"github.com/bhill77/goshop/middleware"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -15,11 +16,6 @@ import (
 type UserHandler struct {
 	db   *gorm.DB
 	conf config.Config
-}
-
-type jwtCustomClaims struct {
-	ID int `json:"id"`
-	jwt.RegisteredClaims
 }
 
 func NewUserHandler(db *gorm.DB, conf config.Config) UserHandler {
@@ -125,7 +121,7 @@ func (h UserHandler) Login(c echo.Context) error {
 	}
 
 	// create jwt token
-	claims := &jwtCustomClaims{
+	claims := &middleware.JwtCustomClaims{
 		ID: user.ID,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

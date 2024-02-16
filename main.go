@@ -18,6 +18,8 @@ func main() {
 		entity.User{},
 		entity.Category{},
 		entity.Product{},
+		entity.Order{},
+		entity.OrderDetail{},
 	)
 
 	e := echo.New()
