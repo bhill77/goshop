@@ -43,5 +43,6 @@ func SetupRoute(e *echo.Echo, db *gorm.DB) {
 	order := e.Group("order", echojwt.WithConfig(jwtConfig))
 	order.GET("", orderHandler.Index)
 	order.POST("", orderHandler.Create)
+	order.PUT("/:id", orderHandler.Update)
 
 }

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/bhill77/goshop/entity"
@@ -34,9 +36,25 @@ func (h *OrderHandler) Create(c echo.Context) error {
 	userID := claims.ID
 
 	var total float32 = 0
-	for _, item := range payload.Details {
-		subTotal := float32(item.Quantity) * item.UnitPrice
+	var err error
+	for i, item := range payload.Details {
+		var product entity.Product
+		h.db.First(&product, item.ProductID)
+		if product.ID == 0 {
+			err = fmt.Errorf("invalid product id: %d", item.ProductID)
+			break
+		}
+		product.Stock = product.Stock - item.Quantity
+		h.db.Save(&product)
+
+		subTotal := float32(item.Quantity) * product.Price
 		total = total + subTotal
+
+		payload.Details[i].UnitPrice = product.Price
+	}
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	order := entity.Order{
@@ -57,6 +75,27 @@ func (h *OrderHandler) Index(c echo.Context) error {
 	claims := user.Claims.(*middleware.JwtCustomClaims)
 	userID := claims.ID
 
-	h.db.Order("id desc").Where("user_id = ?", userID).Find(&orders)
+	h.db.Preload("Details").Order("id desc").Where("user_id = ?", userID).Find(&orders)
 	return c.JSON(http.StatusOK, orders)
+}
+
+func (h *OrderHandler) Update(c echo.Context) error {
+	id := c.Param("id")
+
+	var order entity.Order
+	err := h.db.First(&order, id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return c.JSON(http.StatusNotFound, "Invalid id")
+	}
+
+	var payload = map[string]string{}
+	c.Bind(&payload)
+
+	status, ok := payload["status"]
+	if !ok {
+		return c.JSON(http.StatusBadRequest, "status is required")
+	}
+	order.Status = status
+	h.db.Save(&order)
+	return c.JSON(http.StatusOK, order)
 }
