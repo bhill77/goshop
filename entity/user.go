@@ -13,7 +13,9 @@ type User struct {
 	Password    string    `json:"password"`
 	Address     string    `json:"address"`
 	PhoneNumber string    `json:"phone_number"`
+	RoleID      int       `json:"role_id"`
 	CreatedAt   time.Time `json:"created_at"`
+	Role        Role      `json:"role"`
 }
 
 func (User) Rules() govalidator.MapData {

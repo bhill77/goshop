@@ -20,6 +20,7 @@ func main() {
 		entity.Product{},
 		entity.Order{},
 		entity.OrderDetail{},
+		entity.Role{},
 	)
 
 	e := echo.New()

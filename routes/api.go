@@ -28,6 +28,7 @@ func SetupRoute(e *echo.Echo, db *gorm.DB) {
 	e.GET("/user/:id", userHandler.Show)
 	e.DELETE("/user/:id", userHandler.Delete, echojwt.WithConfig(jwtConfig))
 	e.POST("/login", userHandler.Login)
+	e.GET("/me", userHandler.Profile, echojwt.WithConfig(jwtConfig))
 
 	categoryHandler := handler.NewCategoryHandler(db)
 	cat := e.Group("/category")
@@ -44,5 +45,10 @@ func SetupRoute(e *echo.Echo, db *gorm.DB) {
 	order.GET("", orderHandler.Index)
 	order.POST("", orderHandler.Create)
 	order.PUT("/:id", orderHandler.Update)
+
+	roleHandler := handler.NewRoleHandler(db)
+	role := e.Group("role", echojwt.WithConfig(jwtConfig))
+	role.GET("", roleHandler.Index)
+	role.POST("", roleHandler.Create)
 
 }

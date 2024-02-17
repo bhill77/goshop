@@ -3,7 +3,8 @@ package middleware
 import "github.com/golang-jwt/jwt/v5"
 
 type JwtCustomClaims struct {
-	ID int `json:"id"`
+	ID      int  `json:"id"`
+	IsAdmin bool `json:"is_admin"`
 	jwt.RegisteredClaims
 }
 

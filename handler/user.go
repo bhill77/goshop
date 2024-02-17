@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/bhill77/goshop/config"
@@ -110,7 +111,7 @@ func (h UserHandler) Login(c echo.Context) error {
 	c.Bind(&payload)
 
 	var user entity.User
-	err := h.db.Where("email", payload.Email).First(&user).Error
+	err := h.db.Where("email", payload.Email).Preload("Role").First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return c.JSON(http.StatusBadRequest, "Akun tidak ditemukan")
 	}
@@ -121,8 +122,14 @@ func (h UserHandler) Login(c echo.Context) error {
 	}
 
 	// create jwt token
+	isAdmin := false
+	if user.Role.Name == "Admin" {
+		isAdmin = true
+	}
+
 	claims := &middleware.JwtCustomClaims{
-		ID: user.ID,
+		ID:      user.ID,
+		IsAdmin: isAdmin,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(h.conf.JwtSecret))
@@ -134,6 +141,18 @@ func (h UserHandler) Login(c echo.Context) error {
 		"token": t,
 	})
 
+}
+
+func (h *UserHandler) Profile(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*middleware.JwtCustomClaims)
+	userID := claims.ID
+
+	fmt.Println(claims.IsAdmin)
+
+	var profile entity.User
+	h.db.Preload("Role").First(&profile, userID)
+	return c.JSON(http.StatusOK, profile)
 }
 
 func HashPassword(password string) (string, error) {
