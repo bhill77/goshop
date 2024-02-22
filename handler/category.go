@@ -58,3 +58,15 @@ func (h CategoryHandler) Update(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, category)
 }
+
+func (h CategoryHandler) Delete(c echo.Context) error {
+	id := c.Param("id")
+	var category entity.Category
+	h.db.First(&category, id)
+	if category.ID == 0 {
+		return c.JSON(404, "record not found")
+	}
+
+	h.db.Delete(category)
+	return c.JSON(http.StatusOK, "category deleted")
+}
