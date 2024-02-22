@@ -36,3 +36,25 @@ func (h CategoryHandler) Create(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, category)
 }
+
+func (h CategoryHandler) Update(c echo.Context) error {
+	id := c.Param("id")
+	var category entity.Category
+	h.db.First(&category, id)
+	if category.ID == 0 {
+		return c.JSON(404, "record not found")
+	}
+
+	var payload entity.Category
+	e := validateRequest(c, &payload)
+	if len(e) > 0 {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"validationError": e,
+		})
+	}
+
+	category.Name = payload.Name
+	h.db.Updates(&category)
+
+	return c.JSON(http.StatusOK, category)
+}
