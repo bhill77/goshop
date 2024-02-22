@@ -41,6 +41,8 @@ func SetupRoute(e *echo.Echo, db *gorm.DB) {
 	product := e.Group("/product")
 	product.GET("", productHandler.Index)
 	product.POST("", productHandler.Create, echojwt.WithConfig(jwtConfig))
+	product.PUT("/:id", productHandler.Update, echojwt.WithConfig(jwtConfig))
+	product.DELETE("/:id", productHandler.Delete, echojwt.WithConfig(jwtConfig))
 
 	orderHandler := handler.NewOrderHandler(db)
 	order := e.Group("order", echojwt.WithConfig(jwtConfig))
