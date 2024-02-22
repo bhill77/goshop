@@ -27,8 +27,11 @@ func (h CategoryHandler) Index(c echo.Context) error {
 
 func (h CategoryHandler) Create(c echo.Context) error {
 	var category entity.Category
-	c.Bind(&category)
-
+	e := validateRequest(c, &category)
+	if len(e) > 0 {
+		err := map[string]interface{}{"validationError": e}
+		return c.JSON(http.StatusBadRequest, err)
+	}
 	h.db.Create(&category)
 
 	return c.JSON(http.StatusCreated, category)
